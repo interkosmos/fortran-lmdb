@@ -1,7 +1,8 @@
 # fortran-lmdb
 
-A collection of Fortran 2018 interface bindings to the OpenLDAP Lightning
-Memory-Mapped Database (LMDB).
+A collection of Fortran 2018 interface bindings to the OpenLDAP
+[Lightning Memory-Mapped Database](http://www.lmdb.tech/doc/) (LMDB), a
+B-tree-based database management library modeled loosely on the BerkeleyDB API.
 
 ## Build Instructions
 

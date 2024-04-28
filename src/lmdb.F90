@@ -1,4 +1,4 @@
-! lmdb.f90
+! lmdb.F90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
@@ -776,7 +776,7 @@ module lmdb
         end function mdb_version_
     end interface
 
-#ifdef _WIN32
+#ifdef (_WIN32)
     interface
         ! int mdb_env_copyfd(MDB_env *env, mdb_filehandle_t fd)
         function mdb_env_copyfd(env, fd) bind(c, name='mdb_env_copyfd')
