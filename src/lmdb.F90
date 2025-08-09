@@ -37,24 +37,42 @@ module lmdb
     implicit none (type, external)
     private
 
-    integer, parameter :: c_uint16_t     = c_int16_t
-    integer, parameter :: c_uint32_t     = c_int32_t
-    integer, parameter :: c_unsigned_int = c_int
+#if defined (__flang__) || (defined (__GFORTRAN__) && __GNUC__ > 15) || (defined (__GFORTRAN__) && __GNUC__ == 15 && __GNUC_MINOR__ >= 2)
+
+    public :: c_uint16_t
+    public :: c_uint32_t
+    public :: c_unsigned
+
+#else
+
+    integer, parameter :: c_uint16_t = c_int16_t
+    integer, parameter :: c_uint32_t = c_int32_t
+    integer, parameter :: c_unsigned = c_int
+
+#endif
 
 #if defined (__linux__)
+
     integer, parameter :: c_mode_t = c_uint32_t
+
 #elif defined (__FreeBSD__)
+
     integer, parameter :: c_mode_t = c_uint16_t
+
 #endif
 
 #if defined (_MSC_VER)
-    integer, parameter, public :: mdb_mode_t       = c_int
+
+    integer, parameter, public :: mdb_mode_t = c_int
+
 #else
+
     integer, parameter, public :: mdb_mode_t       = c_mode_t
     integer, parameter, public :: mdb_filehandle_t = c_int
+
 #endif
 
-    integer, parameter, public :: mdb_dbi = c_unsigned_int !! A handle for an individual database in the DB environment.
+    integer, parameter, public :: mdb_dbi = c_unsigned !! A handle for an individual database in the DB environment.
 
     ! Environment flags
     integer(kind=c_int), parameter, public :: MDB_FIXEDMAP    = int(z'01')      !! mmap at a fixed address (experimental).
@@ -146,23 +164,23 @@ module lmdb
     ! MDB_stat
     type, bind(c), public :: mdb_stat_type
         !! Statistics for a database in the environment.
-        integer(kind=c_unsigned_int) :: ms_psize          = 0
-        integer(kind=c_unsigned_int) :: ms_depth          = 0
-        integer(kind=c_size_t)       :: ms_branch_pages   = 0
-        integer(kind=c_size_t)       :: ms_leaf_pages     = 0
-        integer(kind=c_size_t)       :: ms_overflow_pages = 0
-        integer(kind=c_size_t)       :: ms_entries        = 0
+        integer(kind=c_unsigned) :: ms_psize          = 0
+        integer(kind=c_unsigned) :: ms_depth          = 0
+        integer(kind=c_size_t)   :: ms_branch_pages   = 0
+        integer(kind=c_size_t)   :: ms_leaf_pages     = 0
+        integer(kind=c_size_t)   :: ms_overflow_pages = 0
+        integer(kind=c_size_t)   :: ms_entries        = 0
     end type mdb_stat_type
 
     ! MDB_envinfo
     type, bind(c), public :: mdb_envinfo_type
         !! Information about the environment.
-        type(c_ptr)                  :: me_mapaddr    = c_null_ptr
-        integer(kind=c_size_t)       :: me_mapsize    = 0
-        integer(kind=c_size_t)       :: me_last_pgno  = 0
-        integer(kind=c_size_t)       :: me_last_txnid = 0
-        integer(kind=c_unsigned_int) :: me_maxreaders = 0
-        integer(kind=c_unsigned_int) :: me_numreaders = 0
+        type(c_ptr)              :: me_mapaddr    = c_null_ptr
+        integer(kind=c_size_t)   :: me_mapsize    = 0
+        integer(kind=c_size_t)   :: me_last_pgno  = 0
+        integer(kind=c_size_t)   :: me_last_txnid = 0
+        integer(kind=c_unsigned) :: me_maxreaders = 0
+        integer(kind=c_unsigned) :: me_numreaders = 0
     end type mdb_envinfo_type
 
     public :: c_f_str_ptr
@@ -321,11 +339,11 @@ module lmdb
 
         ! int mdb_cursor_del(MDB_cursor *cursor, unsigned int flags)
         function mdb_cursor_del(cursor, flags) bind(c, name='mdb_cursor_del')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr), intent(in), value :: cursor
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int) :: mdb_cursor_del
+            type(c_ptr),              intent(in), value :: cursor
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int)                         :: mdb_cursor_del
         end function mdb_cursor_del
 
         ! int mdb_cursor_get(MDB_cursor *cursor, MDB_val *key, MDB_val *data, MDB_cursor_op op)
@@ -351,13 +369,13 @@ module lmdb
 
         ! int mdb_cursor_put(MDB_cursor *cursor, MDB_val *key, MDB_val *data, unsigned int flags)
         function mdb_cursor_put(cursor, key, data, flags) bind(c, name='mdb_cursor_put')
-            import :: c_int, c_ptr, c_unsigned_int, mdb_val_type
+            import :: c_int, c_ptr, c_unsigned, mdb_val_type
             implicit none
-            type(c_ptr),                  intent(in), value :: cursor
-            type(mdb_val_type),           intent(inout)     :: key
-            type(mdb_val_type),           intent(inout)     :: data
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int)                             :: mdb_cursor_put
+            type(c_ptr),              intent(in), value :: cursor
+            type(mdb_val_type),       intent(inout)     :: key
+            type(mdb_val_type),       intent(inout)     :: data
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int)                         :: mdb_cursor_put
         end function mdb_cursor_put
 
         ! int mdb_cursor_renew(MDB_txn *txn, MDB_cursor *cursor)
@@ -387,23 +405,23 @@ module lmdb
 
         ! int mdb_dbi_flags(MDB_txn *txn, MDB_dbi dbi, unsigned int *flags)
         function mdb_dbi_flags(txn, dbi, flags) bind(c, name='mdb_dbi_flags')
-            import :: c_int, c_ptr, c_unsigned_int, mdb_dbi
+            import :: c_int, c_ptr, c_unsigned, mdb_dbi
             implicit none
-            type(c_ptr),                  intent(in), value :: txn
-            integer(kind=mdb_dbi),        intent(in), value :: dbi
-            integer(kind=c_unsigned_int), intent(out)       :: flags
-            integer(kind=c_int)                             :: mdb_dbi_flags
+            type(c_ptr),              intent(in), value :: txn
+            integer(kind=mdb_dbi),    intent(in), value :: dbi
+            integer(kind=c_unsigned), intent(out)       :: flags
+            integer(kind=c_int)                         :: mdb_dbi_flags
         end function mdb_dbi_flags
 
         ! int mdb_dbi_open(MDB_txn *txn, const char *name, unsigned int flags, MDB_dbi *dbi)
         function mdb_dbi_open_(txn, name, flags, dbi) bind(c, name='mdb_dbi_open')
-            import :: c_char, c_int, c_ptr, c_unsigned_int, mdb_dbi
+            import :: c_char, c_int, c_ptr, c_unsigned, mdb_dbi
             implicit none
-            type(c_ptr),                  intent(in), value :: txn
-            character(kind=c_char),       intent(in)        :: name
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=mdb_dbi),        intent(out)       :: dbi
-            integer(kind=c_int)                             :: mdb_dbi_open_
+            type(c_ptr),              intent(in), value :: txn
+            character(kind=c_char),   intent(in)        :: name
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=mdb_dbi),    intent(out)       :: dbi
+            integer(kind=c_int)                         :: mdb_dbi_open_
         end function mdb_dbi_open_
 
         ! int mdb_dcmp(MDB_txn *txn, MDB_dbi dbi, const MDB_val *a, const MDB_val *b)
@@ -456,12 +474,12 @@ module lmdb
 
         ! int mdb_env_copy2(MDB_env *env, const char *path, unsigned int flags)
         function mdb_env_copy2(env, path, flags) bind(c, name='mdb_env_copy2')
-            import :: c_char, c_int, c_ptr, c_unsigned_int
+            import :: c_char, c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            character(kind=c_char),       intent(in)        :: path
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int)                             :: mdb_env_copy2
+            type(c_ptr),              intent(in), value :: env
+            character(kind=c_char),   intent(in)        :: path
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int)                         :: mdb_env_copy2
         end function mdb_env_copy2
 
         ! int mdb_env_create(MDB_env **env)
@@ -474,11 +492,11 @@ module lmdb
 
         ! int mdb_env_get_flags(MDB_env *env, unsigned int *flags)
         function mdb_env_get_flags(env, flags) bind(c, name='mdb_env_get_flags')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            integer(kind=c_unsigned_int), intent(out)       :: flags
-            integer(kind=c_int)                             :: mdb_env_get_flags
+            type(c_ptr),              intent(in), value :: env
+            integer(kind=c_unsigned), intent(out)       :: flags
+            integer(kind=c_int)                         :: mdb_env_get_flags
         end function mdb_env_get_flags
 
         ! int mdb_env_get_maxkeysize(MDB_env *env)
@@ -491,11 +509,11 @@ module lmdb
 
         ! int mdb_env_get_maxreaders(MDB_env *env, unsigned int *readers)
         function mdb_env_get_maxreaders(env, readers) bind(c, name='mdb_env_get_maxreaders')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            integer(kind=c_unsigned_int), intent(out)       :: readers
-            integer(kind=c_int)                             :: mdb_env_get_maxreaders
+            type(c_ptr),              intent(in), value :: env
+            integer(kind=c_unsigned), intent(out)       :: readers
+            integer(kind=c_int)                         :: mdb_env_get_maxreaders
         end function mdb_env_get_maxreaders
 
         ! int mdb_env_get_path(MDB_env *env, const char **path)
@@ -526,13 +544,13 @@ module lmdb
 
         ! int mdb_env_open(MDB_env *env, const char *path, unsigned int flags, mdb_mode_t mode)
         function mdb_env_open_(env, path, flags, mode) bind(c, name='mdb_env_open')
-            import :: c_char, c_int, c_ptr, c_unsigned_int, mdb_mode_t
+            import :: c_char, c_int, c_ptr, c_unsigned, mdb_mode_t
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            character(kind=c_char),       intent(in)        :: path
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=mdb_mode_t),     intent(in), value :: mode
-            integer(kind=c_int)                             :: mdb_env_open_
+            type(c_ptr),              intent(in), value :: env
+            character(kind=c_char),   intent(in)        :: path
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=mdb_mode_t), intent(in), value :: mode
+            integer(kind=c_int)                         :: mdb_env_open_
         end function mdb_env_open_
 
         ! int mdb_env_set_assert(MDB_env *env, MDB_assert_func *func)
@@ -546,12 +564,12 @@ module lmdb
 
         ! int mdb_env_set_flags(MDB_env *env, unsigned int flags, int onoff)
         function mdb_env_set_flags(env, flags, onoff) bind(c, name='mdb_env_set_flags')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int),          intent(in), value :: onoff
-            integer(kind=c_int)                             :: mdb_env_set_flags
+            type(c_ptr),              intent(in), value :: env
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int),      intent(in), value :: onoff
+            integer(kind=c_int)                         :: mdb_env_set_flags
         end function mdb_env_set_flags
 
         ! int mdb_env_set_mapsize(MDB_env *env, size_t size)
@@ -574,11 +592,11 @@ module lmdb
 
         ! int mdb_env_set_maxreaders(MDB_env *env, unsigned int readers)
         function mdb_env_set_maxreaders(env, readers) bind(c, name='mdb_env_set_maxreaders')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            integer(kind=c_unsigned_int), intent(in), value :: readers
-            integer(kind=c_int)                             :: mdb_env_set_maxreaders
+            type(c_ptr),              intent(in), value :: env
+            integer(kind=c_unsigned), intent(in), value :: readers
+            integer(kind=c_int)                         :: mdb_env_set_maxreaders
         end function mdb_env_set_maxreaders
 
         ! int mdb_env_set_userctx(MDB_env *env, void *ctx)
@@ -621,14 +639,14 @@ module lmdb
 
         ! int mdb_put(MDB_txn *txn, MDB_dbi dbi, MDB_val *key, MDB_val *data, unsigned int flags)
         function mdb_put(txn, dbi, key, data, flags) bind(c, name='mdb_put')
-            import :: c_int, c_ptr, c_unsigned_int, mdb_dbi, mdb_val_type
+            import :: c_int, c_ptr, c_unsigned, mdb_dbi, mdb_val_type
             implicit none
-            type(c_ptr),                  intent(in), value :: txn
-            integer(kind=mdb_dbi),        intent(in), value :: dbi
-            type(mdb_val_type),           intent(inout)     :: key
-            type(mdb_val_type),           intent(inout)     :: data
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int)                             :: mdb_put
+            type(c_ptr),              intent(in), value :: txn
+            integer(kind=mdb_dbi),    intent(in), value :: dbi
+            type(mdb_val_type),       intent(inout)     :: key
+            type(mdb_val_type),       intent(inout)     :: data
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int)                         :: mdb_put
         end function mdb_put
 
         ! int mdb_reader_check(MDB_env *env, int *dead)
@@ -717,13 +735,13 @@ module lmdb
 
         ! int mdb_txn_begin(MDB_env *env, MDB_txn *parent, unsigned int flags, MDB_txn **txn)
         function mdb_txn_begin(env, parent, flags, txn) bind(c, name='mdb_txn_begin')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            type(c_ptr),                  intent(in), value :: parent
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            type(c_ptr),                  intent(out)       :: txn
-            integer(kind=c_int)                             :: mdb_txn_begin
+            type(c_ptr),              intent(in), value :: env
+            type(c_ptr),              intent(in), value :: parent
+            integer(kind=c_unsigned), intent(in), value :: flags
+            type(c_ptr),              intent(out)       :: txn
+            integer(kind=c_int)                         :: mdb_txn_begin
         end function mdb_txn_begin
 
         ! int mdb_txn_commit(MDB_txn *txn)
@@ -776,7 +794,8 @@ module lmdb
         end function mdb_version_
     end interface
 
-#ifdef (_WIN32)
+#if defined (_WIN32)
+
     interface
         ! int mdb_env_copyfd(MDB_env *env, mdb_filehandle_t fd)
         function mdb_env_copyfd(env, fd) bind(c, name='mdb_env_copyfd')
@@ -789,12 +808,12 @@ module lmdb
 
         ! int mdb_env_copyfd2(MDB_env *env, mdb_filehandle_t fd, unsigned int flags)
         function mdb_env_copyfd2(env, fd, flags) bind(c, name='mdb_env_copyfd2')
-            import :: c_int, c_ptr, c_unsigned_int
+            import :: c_int, c_ptr, c_unsigned
             implicit none
-            type(c_ptr),                  intent(in), value :: env
-            type(c_ptr),                  intent(in), value :: fd
-            integer(kind=c_unsigned_int), intent(in), value :: flags
-            integer(kind=c_int)                             :: mdb_env_copyfd2
+            type(c_ptr),              intent(in), value :: env
+            type(c_ptr),              intent(in), value :: fd
+            integer(kind=c_unsigned), intent(in), value :: flags
+            integer(kind=c_int)                         :: mdb_env_copyfd2
         end function mdb_env_copyfd2
 
         ! int mdb_env_get_fd(MDB_env *env, mdb_filehandle_t *fd)
@@ -806,7 +825,9 @@ module lmdb
             integer(kind=c_int)            :: mdb_env_get_fd
         end function mdb_env_get_fd
     end interface
+
 #else
+
     interface
         ! int mdb_env_copyfd(MDB_env *env, mdb_filehandle_t fd)
         function mdb_env_copyfd(env, fd) bind(c, name='mdb_env_copyfd')
@@ -819,11 +840,11 @@ module lmdb
 
         ! int mdb_env_copyfd2(MDB_env *env, mdb_filehandle_t fd, unsigned int flags)
         function mdb_env_copyfd2(env, fd, flags) bind(c, name='mdb_env_copyfd2')
-            import :: c_int, c_ptr, c_unsigned_int, mdb_filehandle_t
+            import :: c_int, c_ptr, c_unsigned, mdb_filehandle_t
             implicit none
             type(c_ptr),                    intent(in), value :: env
             integer(kind=mdb_filehandle_t), intent(in), value :: fd
-            integer(kind=c_unsigned_int),   intent(in), value :: flags
+            integer(kind=c_unsigned),       intent(in), value :: flags
             integer(kind=c_int)                               :: mdb_env_copyfd2
         end function mdb_env_copyfd2
 
@@ -836,7 +857,9 @@ module lmdb
             integer(kind=c_int)                               :: mdb_env_get_fd
         end function mdb_env_get_fd
     end interface
+
 #endif
+
 contains
     subroutine c_f_str_ptr(c_str, f_str, n)
         !! Copies a C string, passed as a C pointer, to a Fortran string.
@@ -845,6 +868,7 @@ contains
         integer(kind=c_size_t),        intent(in), optional :: n
 
         character(kind=c_char), pointer :: ptrs(:)
+        integer                         :: stat
         integer(kind=c_size_t)          :: i, sz
 
         interface
@@ -866,7 +890,9 @@ contains
 
             if (sz < 0) exit copy_if
             call c_f_pointer(c_str, ptrs, [ sz ])
-            allocate (character(len=sz) :: f_str)
+
+            allocate (character(len=sz) :: f_str, stat=stat)
+            if (stat /= 0) exit copy_if
 
             do i = 1, sz
                 f_str(i:i) = ptrs(i)
@@ -878,12 +904,11 @@ contains
         if (.not. allocated(f_str)) f_str = ''
     end subroutine c_f_str_ptr
 
-    function mdb_dbi_open(txn, name, flags, dbi) result(rc)
+    integer function mdb_dbi_open(txn, name, flags, dbi) result(rc)
         type(c_ptr),      intent(inout) :: txn
         character(len=*), intent(in)    :: name
         integer,          intent(in)    :: flags
         integer,          intent(out)   :: dbi
-        integer                         :: rc
 
         rc = mdb_dbi_open_(txn, trim(name) // c_null_char, flags, dbi)
     end function mdb_dbi_open
@@ -895,56 +920,50 @@ contains
         env = c_null_ptr
     end subroutine mdb_env_close
 
-    function mdb_env_open(env, path, flags, mode) result(rc)
+    integer function mdb_env_open(env, path, flags, mode) result(rc)
         type(c_ptr),      intent(inout) :: env
         character(len=*), intent(in)    :: path
         integer,          intent(in)    :: flags
         integer,          intent(in)    :: mode
-        integer                         :: rc
 
         rc = mdb_env_open_(env, trim(path) // c_null_char, flags, int(mode, kind=mdb_mode_t))
     end function mdb_env_open
 
-    function mdb_env_set_assert(env, func) result(rc)
+    integer function mdb_env_set_assert(env, func) result(rc)
         type(c_ptr), intent(in)    :: env
         procedure(mdb_assert_func) :: func
-        integer                    :: rc
 
         rc = mdb_env_set_assert_(env, c_funloc(func))
     end function mdb_env_set_assert
 
-    function mdb_reader_list(env, func, ctx) result(rc)
+    integer function mdb_reader_list(env, func, ctx) result(rc)
         type(c_ptr), intent(in) :: env
         procedure(mdb_msg_func) :: func
         type(c_ptr), intent(in) :: ctx
-        integer                 :: rc
 
         rc = mdb_reader_list_(env, c_funloc(func), ctx)
     end function mdb_reader_list
 
-    function mdb_set_compare(txn, dbi, cmp) result(rc)
+    integer function mdb_set_compare(txn, dbi, cmp) result(rc)
         type(c_ptr),           intent(in) :: txn
         integer(kind=mdb_dbi), intent(in) :: dbi
         procedure(mdb_cmp_func)           :: cmp
-        integer                           :: rc
 
         rc = mdb_set_compare_(txn, dbi, c_funloc(cmp))
     end function mdb_set_compare
 
-    function mdb_set_dupsort(txn, dbi, cmp) result(rc)
+    integer function mdb_set_dupsort(txn, dbi, cmp) result(rc)
         type(c_ptr),           intent(in) :: txn
         integer(kind=mdb_dbi), intent(in) :: dbi
         procedure(mdb_cmp_func)           :: cmp
-        integer                           :: rc
 
         rc = mdb_set_dupsort_(txn, dbi, c_funloc(cmp))
     end function mdb_set_dupsort
 
-    function mdb_set_relfunc(txn, dbi, rel) result(rc)
+    integer function mdb_set_relfunc(txn, dbi, rel) result(rc)
         type(c_ptr),           intent(in) :: txn
         integer(kind=mdb_dbi), intent(in) :: dbi
         procedure(mdb_rel_func)           :: rel
-        integer                           :: rc
 
         rc = mdb_set_relfunc_(txn, dbi, c_funloc(rel))
     end function mdb_set_relfunc

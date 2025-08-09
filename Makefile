@@ -4,14 +4,14 @@
 FC      = gfortran
 AR      = ar
 MAKE    = make
-PREFIX  = /usr
+PREFIX  = /usr/local
 
 DEBUG   = -std=f2018 -g -O0 -Wall -fmax-errors=1
-RELEASE = -std=f2018 -O2 -march=native
+RELEASE = -std=f2018 -O2
 
 PPFLAGS = -D__FreeBSD__
 FFLAGS  = $(RELEASE)
-LDLAGS  = -I$(PREFIX)/include -L$(PREFIX)/lib
+LDFLAGS = -I$(PREFIX)/include -L$(PREFIX)/lib
 LDLIBS  = -llmdb
 ARFLAGS = rcs
 INCDIR  = $(PREFIX)/include/libfortran-lmdb

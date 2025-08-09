@@ -2,7 +2,8 @@
 
 A collection of Fortran 2018 interface bindings to the OpenLDAP
 [Lightning Memory-Mapped Database](http://www.lmdb.tech/doc/) (LMDB), a
-B-tree-based database management library modeled loosely on the BerkeleyDB API.
+B-tree-based database management library modeled loosely on the Berkeley DB
+API.
 
 ## Build Instructions
 
@@ -21,13 +22,15 @@ On Linux, instead:
 ### Make
 
 If GNU Fortran is used to build the interface library, select the build target
-depending on your operating system. On FreeBSD:
+depending on your operating system.
+
+On FreeBSD:
 
 ```
 $ make freebsd
 ```
 
-On Linux, instead:
+On Linux:
 
 ```
 $ make linux

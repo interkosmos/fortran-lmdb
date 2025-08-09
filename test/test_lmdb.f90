@@ -23,49 +23,44 @@ program main
     call db_version()
 
     db_block: block
-        print '("Trying to open database ...")'
+        print '(">> Trying to open database ...")'
         rc = db_open(db, env_name=ENV_NAME, db_name='fortran', map_size=10485760, max_dbs=1, max_readers=1)
         if (db_is_error(rc)) exit db_block
 
-        print '("Inserting key, value ...")'
+        print '(">> Inserting key, value ...")'
         rc = db_insert(db, key='test', value='Fortran')
         if (db_is_error(rc)) exit db_block
 
-        print '("Reading key, value ...")'
+        print '(">> Reading key, value ...")'
         rc = db_get(db, key='test', value=value)
         if (db_is_error(rc)) exit db_block
 
-        print '("Validating value ...")'
+        print '(">> Validating value ...")'
         if (value /= 'Fortran') then
             print '("Error: value mismatch")'
             exit db_block
         end if
 
-        print '("Deleting key ...")'
+        print '(">> Deleting key ...")'
         rc = db_delete(db, 'test')
     end block db_block
 
-    if (db_is_error(rc)) then
-        print '("Error: ", a, " (", i0, ")")', mdb_strerror(rc), rc
-    end if
+    if (db_is_error(rc)) print '("Error: ", a, " (", i0, ")")', mdb_strerror(rc), rc
 
-    print '("Closing database ...")'
+    print '(">> Closing database ...")'
     call db_close(db)
 
-    print '("Deleting database ...")'
+    print '(">> Deleting database ...")'
     call db_purge(ENV_NAME)
 
-    if (c_associated(db%env)) then
-        stop 'Error: MDB_env still associated (compiler bug)'
-    end if
+    if (c_associated(db%env)) stop 'Error: MDB_env still associated (compiler bug)'
 contains
     subroutine db_close(db)
         type(db_type), intent(inout) :: db
 
-        if (c_associated(db%env)) then
-            if (db%dbi > 0) call mdb_dbi_close(db%env, db%dbi)
-            call mdb_env_close(db%env)
-        end if
+        if (.not. c_associated(db%env)) return
+        if (db%dbi > 0) call mdb_dbi_close(db%env, db%dbi)
+        call mdb_env_close(db%env)
     end subroutine db_close
 
     integer function db_delete(db, key) result(rc)
