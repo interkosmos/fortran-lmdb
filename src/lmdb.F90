@@ -45,9 +45,9 @@ module lmdb
 
 #else
 
-    integer, parameter :: c_uint16_t = c_int16_t
-    integer, parameter :: c_uint32_t = c_int32_t
-    integer, parameter :: c_unsigned = c_int
+    integer, parameter, public :: c_uint16_t = c_int16_t
+    integer, parameter, public :: c_uint32_t = c_int32_t
+    integer, parameter, public :: c_unsigned = c_int
 
 #endif
 
